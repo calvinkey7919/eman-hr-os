@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-
-const queryClient = new QueryClient();
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: "Eman HR OS",
@@ -18,10 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-slate-950 text-slate-50 antialiased">
-        <QueryClientProvider client={queryClient}>
+        <Providers>
           {children}
-          <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
+        </Providers>
       </body>
     </html>
   );
