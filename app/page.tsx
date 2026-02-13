@@ -3,9 +3,8 @@
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Float, Text } from '@react-three/drei';
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 
 const EmployeeOrb = ({
   name,
@@ -50,17 +49,11 @@ export default function Home() {
     },
   });
 
-  const stats = useMemo(() => {
-    let critical = 0,
-      warning = 0,
-      healthy = 0;
-    for (const emp of employees as any[]) {
-      if (emp.status === 'critical') critical++;
-      else if (emp.status === 'warning') warning++;
-      else healthy++;
-    }
-    return { critical, warning, healthy };
-  }, [employees]);
+  const stats = {
+    critical: employees.filter((emp: any) => emp.status === 'critical').length,
+    warning: employees.filter((emp: any) => emp.status === 'warning').length,
+    healthy: employees.filter((emp: any) => emp.status === 'healthy').length,
+  };
 
   return (
     <main className="min-h-screen flex flex-col gap-8 p-6 md:p-10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -81,43 +74,37 @@ export default function Home() {
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
-          className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-medium text-slate-950 shadow-lg shadow-emerald-500/30"
+          className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-medium text-slate-950 shadow-lg shadow-emerald-500/30 hover:bg-emerald-600"
         >
           One-Click Sync
         </motion.button>
       </header>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-          <div className="text-xs uppercase tracking-wide text-slate-400">Critical</div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <div className="text-3xl font-semibold text-critical">{stats.critical}</div>
-            <span className="text-xs text-slate-500">employees</span>
-          </div>
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="rounded-2xl border border-slate-800/50 bg-slate-900/60 backdrop-blur-sm p-6 shadow-xl">
+          <div className="text-xs uppercase tracking-wide text-slate-400 mb-2">Critical</div>
+          <div className="text-3xl font-bold text-red-400 mb-1">{stats.critical}</div>
+          <div className="text-slate-500 text-sm">Iqama/Contract &lt;30 days</div>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-          <div className="text-xs uppercase tracking-wide text-slate-400">Warning</div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <div className="text-3xl font-semibold text-warning">{stats.warning}</div>
-            <span className="text-xs text-slate-500">employees</span>
-          </div>
+        <div className="rounded-2xl border border-slate-800/50 bg-slate-900/60 backdrop-blur-sm p-6 shadow-xl">
+          <div className="text-xs uppercase tracking-wide text-slate-400 mb-2">Warning</div>
+          <div className="text-3xl font-bold text-amber-400 mb-1">{stats.warning}</div>
+          <div className="text-slate-500 text-sm">&lt;60 days expiry</div>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-          <div className="text-xs uppercase tracking-wide text-slate-400">Healthy</div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <div className="text-3xl font-semibold text-healthy">{stats.healthy}</div>
-            <span className="text-xs text-slate-500">employees</span>
-          </div>
+        <div className="rounded-2xl border border-slate-800/50 bg-slate-900/60 backdrop-blur-sm p-6 shadow-xl">
+          <div className="text-xs uppercase tracking-wide text-slate-400 mb-2">Healthy</div>
+          <div className="text-3xl font-bold text-emerald-400 mb-1">{stats.healthy}</div>
+          <div className="text-slate-500 text-sm">All compliant</div>
         </div>
       </section>
 
-      <section className="relative w-full flex-1 rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-[0_0_80px_-40px_rgba(15,23,42,1)]">
+      <section className="flex-1 min-h-[600px] rounded-3xl border border-slate-800/50 bg-slate-900/30 backdrop-blur-xl shadow-2xl overflow-hidden">
         <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
-          <color attach="background" args={["#020617"]} />
-          <ambientLight intensity={0.7} />
-          <pointLight position={[10, 10, 10]} intensity={1.4} />
-          <OrbitControls enablePan={false} />
-          {(employees as any[]).map((emp, index) => {
+          <color attach="background" args={['#020617']} />
+          <ambientLight intensity={0.6} />
+          <pointLight position={[10, 10, 10]} intensity={1.2} />
+          <OrbitControls enablePan={false} enableZoom={false} autoRotate autoRotateSpeed={0.5} />
+          {employees.map((emp: any, index: number) => {
             const row = Math.floor(index / 5);
             const col = index % 5;
             const x = (col - 2) * 2.4;
@@ -126,7 +113,7 @@ export default function Home() {
               <EmployeeOrb
                 key={emp.id}
                 name={emp.name}
-                status={emp.status ?? 'healthy'}
+                status={emp.status as 'critical' | 'warning' | 'healthy'}
                 x={x}
                 z={z}
               />
